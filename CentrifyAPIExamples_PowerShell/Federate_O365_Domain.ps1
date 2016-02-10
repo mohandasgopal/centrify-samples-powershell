@@ -25,17 +25,18 @@ Function Login()
 { 
     $LoginJson = "{user:'$username', password:'$password'}"
     $LoginHeader = @{"X-CENTRIFY-NATIVE-CLIENT"="1"}
-    $Login = Invoke-RestMethod -Method Post -Uri "https://$server/security/login" -Body $LoginJson -ContentType $ContentType -Headers $LoginHeader
+    $Login = invoke-WebRequest -Uri "https://$server/security/login" -ContentType $ContentType -Method Post -Body $LoginJson -SessionVariable websession -UseBasicParsing
 
-    Write-Host $Login.Result
-    return $Login.Result.Auth
-    
+    $cookies = $websession.Cookies.GetCookies("https://$server/security/login") 
+
+    $ASPXAuth = $cookies[".ASPXAUTH"].value
+    return $ASPXAuth
 }
 
 #Federate Domain
 Function FederateDomain($Auth, $Domain, $AppKey)
 {
-    $FederateDomainHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $FederateDomainHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
 	$FederateDomainParams = @{domainName='$Domain';applicationRowKey='$AppKey'}
     
     $FederateDomain = try { Invoke-RestMethod -Method Post -Uri "https://$server/O365/FederateDomain" -Body $FederateDomainParams -ContentType $ContentType -Headers $FederateDomainHeaders } catch { $_.Exception.Response }  
@@ -47,7 +48,7 @@ Function FederateDomain($Auth, $Domain, $AppKey)
 #UnFederate Domain
 Function UnFederateDomain($Auth, $Domain, $AppKey)
 {
-    $UnFederateDomainHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $UnFederateDomainHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
 	$UnFederateDomainParams = @{domainName='$Domain';applicationRowKey='$AppKey'}
     
     $UnFederateDomain = try { Invoke-RestMethod -Method Post -Uri "https://$server/O365/UnfederateDomain" -Body $UnFederateDomainParams -ContentType $ContentType -Headers $UnFederateDomainHeaders } catch { $_.Exception.Response }  
@@ -59,7 +60,7 @@ Function UnFederateDomain($Auth, $Domain, $AppKey)
 #Get List Of Domains
 Function GetDomains($Auth, $AppKey)
 {
-    $GetDomainsHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $GetDomainsHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
 	$GetDomainsJSON = "{""Args"":{""PageNumber"":1,""PageSize"":10000,""Limit"":10000,""SortBy"":"""",""direction"":""False"",""Caching"":-1}}"
     
     $GetDomains = try { Invoke-RestMethod -Method Post -Uri "https://$server/O365/GetOffice365Domains?rowKey=" + $AppKey -Body $GetDomainsJSON -ContentType $ContentType -Headers $GetDomainsHeaders } catch { $_.Exception.Response }  
@@ -92,13 +93,22 @@ $Domain = "CentrifyDemo108.mail.onmicrosoft.com"
 $AppKey = "4e87084b-57d4-4049-a547-1405ca65d656"
 $AuthToken = Login
 
-FederateDomain $AuthToken $Domain $AppKey
+if ($AuthToken -ne "")
+{
+	FederateDomain $AuthToken $Domain $AppKey
 
-#Sample Code to Unfederate a domain
-#FederateDomain $AuthToken $Domain $AppKey
+	#Sample Code to Unfederate a domain
+	#FederateDomain $AuthToken $Domain $AppKey
 
-#Sample Code to Get a list of all domains in the app
-#GetDomains $AuthToken $Domain $AppKey
+	#Sample Code to Get a list of all domains in the app
+	#GetDomains $AuthToken $Domain $AppKey
+}
+else
+{
+	Write-Host "Error: ASPXAuth token was null"
+}
+
+
 
 
 

@@ -27,12 +27,12 @@ Function Login()
 { 
     $LoginJson = "{user:'$username', password:'$password'}"
     $LoginHeader = @{"X-CENTRIFY-NATIVE-CLIENT"="1"}
-    $Login = Invoke-RestMethod -Method Post -Uri "https://$server/security/login" -Body $LoginJson -ContentType $ContentType -Headers $LoginHeader
+    $Login = invoke-WebRequest -Uri "https://$server/security/login" -ContentType $ContentType -Method Post -Body $LoginJson -SessionVariable websession -UseBasicParsing
 
-    Write-Host $Login.Result.Auth
+    $cookies = $websession.Cookies.GetCookies("https://$server/security/login") 
 
-    return $Login.Result.Auth
-    
+    $ASPXAuth = $cookies[".ASPXAUTH"].value
+    return $ASPXAuth    
 }
 
 #Update App
@@ -41,7 +41,7 @@ Function UpdateApp($Auth, $AppKey, $NewPass)
     $UpdateAppJson = "{""UserNameStrategy"":""Fixed"",""Password"":""$NewPass""}"
     Write-Host $Auth
 
-    $UpdateAppHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $UpdateAppHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
     $UpdateApp = Invoke-RestMethod -Method Post -Uri "https://$server/saasManage/UpdateApplicationDE?_RowKey=$AppKey" -Body $UpdateAppJson -ContentType $ContentType -Headers $UpdateAppHeaders
 
     Write-Host $UpdateApp.result
@@ -55,7 +55,15 @@ Function UpdateApp($Auth, $AppKey, $NewPass)
 Write-Host "Resetting Password for App" + $appkey
 
 $AuthToken = Login
-UpdateApp $AuthToken $appkey $newpass
+
+if ($AuthToken -ne "")
+{
+	UpdateApp $AuthToken $appkey $newpass
+}
+else
+{
+	Write-Host "Error: ASPXAuth token was null"
+}
 
 
 

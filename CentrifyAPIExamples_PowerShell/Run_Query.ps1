@@ -26,17 +26,18 @@ Function Login()
 { 
     $LoginJson = "{user:'$username', password:'$password'}"
     $LoginHeader = @{"X-CENTRIFY-NATIVE-CLIENT"="1"}
-    $Login = Invoke-RestMethod -Method Post -Uri "https://$server/security/login" -Body $LoginJson -ContentType $ContentType -Headers $LoginHeader
+    $Login = invoke-WebRequest -Uri "https://$server/security/login" -ContentType $ContentType -Method Post -Body $LoginJson -SessionVariable websession -UseBasicParsing
 
-    Write-Host $Login.Result
-    return $Login.Result.Auth
-    
+    $cookies = $websession.Cookies.GetCookies("https://$server/security/login") 
+
+    $ASPXAuth = $cookies[".ASPXAUTH"].value
+    return $ASPXAuth
 }
 
 #Used for all SQL Queries
 Function RunQuery($Auth, $Query)
 {
-    $QueryHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $QueryHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
     $QueryJson = $Query
 
     $ExicuteQuery = Invoke-RestMethod -Method Post -Uri "https://$server/RedRock/query" -Body $QueryJson -ContentType $ContentType -Headers $QueryHeaders 
@@ -53,21 +54,28 @@ Write-Host "Running Query"
 
 $AuthToken = Login
 
-$QueryResult = RunQuery $AuthToken "{""Script"":""$ReportQuery""}"
-
-$ReportBody = ""
-
-foreach ($result in $QueryResult)
+if ($AuthToken -ne "")
 {
-    foreach ($row in $result.Results)
+    $QueryResult = RunQuery $AuthToken "{""Script"":""$ReportQuery""}"
+
+    $ReportBody = ""
+
+    foreach ($result in $QueryResult)
     {
-       $ReportBody = $ReportBody + $row.Row
-            
+        foreach ($row in $result.Results)
+        {
+            $ReportBody = $ReportBody + $row.Row           
+        }
     }
+
+    Write-Host "Final Query Is:"
+
+    Write-Host "$ReportBody" 
 }
-
-Write-Host "$ReportBody"
-
+else
+{
+	Write-Host "Error: ASPXAuth token was null"
+}
 
 
 

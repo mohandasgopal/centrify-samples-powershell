@@ -37,18 +37,19 @@ Function Login()
 { 
     $LoginJson = "{user:'$username', password:'$password'}"
     $LoginHeader = @{"X-CENTRIFY-NATIVE-CLIENT"="1"}
-    $Login = Invoke-RestMethod -Method Post -Uri "https://$server/security/login" -Body $LoginJson -ContentType $ContentType -Headers $LoginHeader
+    $Login = invoke-WebRequest -Uri "https://$server/security/login" -ContentType $ContentType -Method Post -Body $LoginJson -SessionVariable websession -UseBasicParsing
 
-    Write-Host $Login.Result
-    return $Login.Result.Auth
-    
+    $cookies = $websession.Cookies.GetCookies("https://$server/security/login") 
+
+    $ASPXAuth = $cookies[".ASPXAUTH"].value
+    return $ASPXAuth    
 }
 
 #create user function
 #JSON can be further customized to create all user fields if desired.
 Function CreateUser($Auth)
 {
-    $CreateUserHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $CreateUserHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
     $CreateUserJson = "{""textfield-1295-inputEl"":""testname1"",""Mail"":""$CreateUserName"",""Password"":""$CreateUserPass"",""confirmPassword"":""$CreateUserPass"",""enableState"":false,""ForcePasswordChangeNext"":true,""InEverybodyRole"":true,""SendEmailInvite"":true,""DisplayName"":""$CreateUserName"",""Description"":"""",""OfficeNumber"":"""",""HomeNumber"":"""",""MobileNumber"":"""",""fileName"":"""",""ID"":"""",""state"":""None"",""ReportsTo"":""Unassigned"",""combobox-1333-inputEl"":""$CreateUserDomain"",""Name"":""$CreateUserEmail""}"
     
     $CreateUser = try { Invoke-RestMethod -Method Post -Uri "https://$server/cdirectoryservice/createuser" -Body $CreateUserJson -ContentType $ContentType -Headers $CreateUserHeaders } catch { $_.Exception.Response }  
@@ -60,7 +61,7 @@ Function CreateUser($Auth)
 #Used for all SQL Queries
 Function RunQuery($Auth, $Query)
 {
-    $QueryHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $QueryHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
     $QueryJson = $Query
 
     $ExicuteQuery = Invoke-RestMethod -Method Post -Uri "https://$server/RedRock/query" -Body $QueryJson -ContentType $ContentType -Headers $CreateUserHeaders 
@@ -76,7 +77,7 @@ Function RunQuery($Auth, $Query)
 #Delete Device. Required a call to RunQuery to get DeviceID
 Function DeleteDevice($Auth, $DeviceID)
 {
-    $DeviceHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Auth" = $Auth}
+    $DeviceHeaders = @{"X-CENTRIFY-NATIVE-CLIENT"="1";"Authorization" = "Bearer " + $Auth}
     $Delete = Invoke-RestMethod -Method Post -Uri "https://$server/mobile/deletedevice?systemID=&deviceID=$DeviceID" -Headers $CreateUserHeaders 
 
     Write-Host "Delete Success = $Delete.success"
@@ -97,7 +98,15 @@ if($api -eq "CreateUser")
 {
     Write-Host "Creating User"
     $AuthToken = Login
-    CreateUser $AuthToken
+
+	if ($AuthToken -ne "")
+	{
+		CreateUser $AuthToken
+	}
+	else
+	{
+		 Write-Host "Error: ASPXAuth token was null"
+	}
 
 }
 
@@ -108,16 +117,23 @@ if($api -eq "DeleteDevice")
 {
      Write-Host "Deleting Device $DeviceName..."
      $AuthToken = Login
-     
-     $DeviceList = RunQuery $AuthToken "{""Script"":""SELECT DeviceID FROM Device WHERE Name = '$DeviceName'""}"
 
-     foreach ($Device in $DeviceList.Results)
-     {
-        foreach ($DeviceID in $Device.Row.DeviceID)
-        {
-            DeleteDevice $AuthToken $DeviceID $Entity
-        }
-     }
+	 if ($AuthToken -ne "")
+	 {
+		$DeviceList = RunQuery $AuthToken "{""Script"":""SELECT DeviceID FROM Device WHERE Name = '$DeviceName'""}"
+
+		foreach ($Device in $DeviceList.Results)
+		{
+			foreach ($DeviceID in $Device.Row.DeviceID)
+			{
+				DeleteDevice $AuthToken $DeviceID $Entity
+			}
+		}
+	 }
+	 else
+	 {
+		Write-Host "Error: ASPXAuth token was null"
+	 }     
 }
 
 #RunReport Combines a custom SQL Query using RunQuery and a call to SendEmail
@@ -126,25 +142,43 @@ if($api -eq "DeleteDevice")
 if($api -eq "RunReport")
 {
     $AuthToken = Login
-    $QueryResult = RunQuery $AuthToken "{""Script"":""$ReportQuery""}"
-    $ReportBody = ""
 
-    foreach ($result in $QueryResult)
-    {
-        foreach ($row in $result.Results)
-        {
-           $ReportBody = $ReportBody + $row.Row
+	if ($AuthToken -ne "")
+	{
+		$QueryResult = RunQuery $AuthToken "{""Script"":""$ReportQuery""}"
+		$ReportBody = ""
+
+		foreach ($result in $QueryResult)
+		{
+			foreach ($row in $result.Results)
+			{
+				$ReportBody = $ReportBody + $row.Row
             
-        }
-    }
+			}
+		}
 
-    Write-Host "Report Body Will Be $ReportBody"
-    #SendEmail $EmailAddress $ReportBody
+		Write-Host "Report Body Will Be $ReportBody"
+		#SendEmail $EmailAddress $ReportBody
+	}
+	else
+	{
+		 Write-Host "Error: ASPXAuth token was null"
+	}
+    
 }
 
 if($api -eq "SimpleLogin")
 {
     $AuthToken = Login
+
+	if ($AuthToken -ne "")
+	{
+		Write-Host "Login successful. ASPXAuth token is: " + $AuthToken
+	}
+	else
+	{
+		 Write-Host "Error: ASPXAuth token was null"
+	}
 }
 
 
