@@ -22,20 +22,32 @@ param(
 # Get the directory the example script lives in
 $exampleRootDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Import the Centrify.Samples.Powershell module
+# Import the Centrify.Samples.Powershell module 
 Import-Module $exampleRootDir\Centrify.Samples.Powershell.psm1 3>$null 4>$null
+
+# If Verbose is enabled, we'll pass it through
+$enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
+
+# Import sample function definitions
+. $exampleRootDir\Centrify.Samples.Powershell.QueryFunction.ps1
 
 try
 {
     # MFA login and get a bearer token as the provided user, uses interactive Read-Host/Write-Host to perform MFA
-    $token = Centrify-InteractiveLogin-GetToken -Username $username -Endpoint $endpoint -Verbose:($PSBoundParameters['Verbose'] -eq $true)    
+    #  If you already have a bearer token and endpoint, no need to do this, just start using Centrify-InvokeREST
+    $token = Centrify-InteractiveLogin-GetToken -Username $username -Endpoint $endpoint -Verbose:$enableVerbose    
             
     # Get information about the user who owns this token via /security/whoami     
-    $userInfo = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/whoami" -Token $token.BearerToken -Verbose:($PSBoundParameters['Verbose'] -eq $true)     
-    Write-Host $userInfo.Result
+    $userInfo = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/whoami" -Token $token.BearerToken -Verbose:$enableVerbose     
+    Write-Host "Current user: " $userInfo.Result.User
+    
+    # Run a query for top user logins from last 30 days
+    $query = "select NormalizedUser as User, Count(*) as Count from Event where EventType = 'Cloud.Core.Login' and WhenOccurred >= DateFunc('now', '-30') group by User order by count desc"
+    $queryResult = Query -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Query $query            
+    Write-Host "Query resulted in " $queryResult.FullCount " results, first row is: " $queryResult.Results[0].Row    
         
     # We're done, and don't want to use this token for anything else, so invalidate it by logging out
-    Centrify-InvokeREST -Endpoint $endpoint -Method "/security/logout" -Token $bearerToken -Verbose:($PSBoundParameters['Verbose'] -eq $true)       
+    $logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
 }
 finally
 {
