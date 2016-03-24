@@ -34,6 +34,9 @@ $enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.GetRoleApps.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CreateUser.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.SetUserState.ps1
+# Import sample function definitions for CPS
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddResource.ps1
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddAccount.ps1
 
 try
 {
@@ -75,8 +78,14 @@ try
     #SetUserState -Endpoint $token.Endpoint -BearerToken $token.BearerToken -UserUuid $newUserUUID -NewState "None"
         
     # Update the credentials for my UP app...
-    #UpdateApplicationDE -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "someAppKeyFromGetUPData" -Username "newUsername" -Password "newPassword"        
-        
+    #UpdateApplicationDE -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "someAppKeyFromGetUPData" -Username "newUsername" -Password "newPassword"    
+    
+    # Create New CPS Resource
+    #AddResource -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Name "ResourceName" -FQDN "Machine FQDN" -ComputerClass "Windows" -SessionType "Rdp" -Description "Some Description"     
+    
+    # Add User to a CPS Resource
+    #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -Description "Some Description" -Host "ComputerID"    
+    
     # We're done, and don't want to use this token for anything else, so invalidate it by logging out
     $logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
 }
