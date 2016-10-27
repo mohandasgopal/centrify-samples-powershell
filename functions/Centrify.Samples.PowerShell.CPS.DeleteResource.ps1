@@ -31,7 +31,7 @@ function DeleteResource {
     $restResult = Centrify-InvokeREST -Method "/ServerManage/DeleteResource" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
-        throw "Server error: $restResult.Message"
+        throw "Server error: $($restResult.Message)"
     }     
     
     return $restResult.Result		    
