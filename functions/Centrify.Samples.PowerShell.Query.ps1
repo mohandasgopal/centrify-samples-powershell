@@ -33,7 +33,7 @@ function Query {
     $queryResult = Centrify-InvokeREST -Method "/redrock/query" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($queryResult.success -ne $true)
     {
-        throw "Server error: $queryResult.Message"
+        throw "Server error: $($queryResult.Message)"
     }     
     
     return $queryResult.Result

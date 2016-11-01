@@ -29,7 +29,7 @@ function DeleteAccount {
     $restResult = Centrify-InvokeREST -Method "ServerManage/DeleteAccount" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
-        throw "Server error: $restResult.Message"
+        throw "Server error: $($restResult.Message)"
     }     
     
     return $restResult.Result		    

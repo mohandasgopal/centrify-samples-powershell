@@ -26,7 +26,7 @@ function GetUPData {
     $restResult = Centrify-InvokeREST -Method "/uprest/getupdata" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
-        throw "Server error: $restResult.Message"
+        throw "Server error: $($restResult.Message)"
     }     
     
     return $restResult.Result.Apps
