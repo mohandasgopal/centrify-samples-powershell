@@ -84,7 +84,7 @@ try
     #AddResource -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Name "ResourceName" -FQDN "Machine FQDN" -ComputerClass "Windows" -SessionType "Rdp" -Description "Some Description"     
     
     # Add User to a CPS Resource
-    #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -Description "Some Description" -Host "ComputerID"    
+    #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -DomainID "DomainId" -Description "Some Description" -Host "ComputerID"    
     
     # We're done, and don't want to use this token for anything else, so invalidate it by logging out
     $logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
