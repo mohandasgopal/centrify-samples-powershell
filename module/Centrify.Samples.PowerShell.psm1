@@ -1,17 +1,3 @@
-# Copyright 2016 Centrify Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 <# 
  .Synopsis
   Performs a REST call against the CIS platform.  
@@ -52,7 +38,8 @@ function Centrify-InvokeREST {
         $objectContent = $null,
         [string]$jsonContent = $null,       
         $websession = $null,
-        [bool]$includeSessionInResult = $false            
+        [bool]$includeSessionInResult = $false,
+        [System.Security.Cryptography.X509Certificates.X509Certificate] $certificate = $null
     )
                              
     $methodEndpoint = $endpoint + $method
@@ -82,12 +69,27 @@ function Centrify-InvokeREST {
     if(!$websession)
     {
         Write-Verbose "Creating new session variable"
-        $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -SessionVariable websession -Headers $addHeaders
+        if($certificate -eq $null)
+        {
+            $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -SessionVariable websession -Headers $addHeaders
+        }
+        else 
+        {
+            $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -SessionVariable websession -Headers $addHeaders -Certificate $certificate
+        }
     }
     else
     {
         Write-Verbose "Using existing session variable $websession"
-        $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -WebSession $websession
+        if($certificate -eq $null)
+        {
+            $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -WebSession $websession
+        }
+        else
+        {            
+            $response = Invoke-RestMethod -Uri $methodEndpoint -ContentType "application/json" -Method Post -Body $jsonContent -WebSession $websession -Certificate $certificate
+        }
+        
     }
              
     if($includeSessionInResult)
@@ -102,6 +104,52 @@ function Centrify-InvokeREST {
     {
         return $response
     }                        
+}
+
+<# 
+ .Synopsis
+  Performs a silent login using a certificate, and outputs a bearer token (Field name "BearerToken").
+
+ .Description
+  Performs a silent login using client certificate, and retrieves a token suitable for making
+  additional API calls as a Bearer token (Authorization header).  Output is an object
+  where field "BearerToken" contains the resulting token, or "Error" contains an error
+  message from failed authentication. Result object also contains Endpoint for pipeline.
+
+ .Parameter Endpoint
+  The endpoint to authenticate against, required - must be tenant's url/pod
+
+ .Example
+   # Get a token for API calls to abc123.centrify.com
+   Centrify-CertSsoLogin-GetToken -Endpoint "https://abc123.centrify.com" 
+#>
+function Centrify-CertSsoLogin-GetToken {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string] $endpoint = "https://cloud.centrify.com",
+        [Parameter(Mandatory=$true)]
+        [System.Security.Cryptography.X509Certificates.X509Certificate] $certificate = $null        
+    )
+        
+    $subject = $certificate.Subject
+    Write-Verbose "Initiating Certificate SSO against $endpoint with $subject"
+    $noArg = @{}
+                     
+    $restResult = Centrify-InvokeREST -Endpoint $endpoint -Method "/negotiatecertsecurity/sso" -Token $null -ObjectContent $startArg -IncludeSessionInResult $true -Certificate $certificate                    
+    $startAuthResult = $restResult.RestResult                     
+        
+    # First, see if we need to repeat our call against a different pod 
+    if($startAuthResult.success -eq $false)
+    {            
+        throw $startAuthResult.Message
+    }
+            
+    $finalResult = @{}
+    $finalResult.Endpoint = $endpoint    
+    $finalResult.BearerToken = $restResult.WebSession.Cookies.GetCookies($endpoint)[".ASPXAUTH"].value
+    
+    Write-Output $finalResult        
 }
 
 <# 
@@ -336,3 +384,4 @@ function Centrify-Internal-MechToPrompt {
 
 Export-ModuleMember -function Centrify-InvokeREST
 Export-ModuleMember -function Centrify-InteractiveLogin-GetToken
+Export-ModuleMember -function Centrify-CertSsoLogin-GetToken

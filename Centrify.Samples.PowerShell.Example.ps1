@@ -16,7 +16,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$username = "",
-    [string]$endpoint = "https://cloud.centrify.com"
+    [string]$endpoint = "https://aaa3021.my-kibble.centrify.com"
 )
 
 # Get the directory the example script lives in
@@ -29,6 +29,7 @@ Import-Module $exampleRootDir\module\Centrify.Samples.Powershell.psm1 3>$null 4>
 $enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
 
 # Import sample function definitions
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.IssueUserCert.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.Query.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.GetUPData.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.GetRoleApps.ps1
@@ -42,7 +43,21 @@ try
 {
     # MFA login and get a bearer token as the provided user, uses interactive Read-Host/Write-Host to perform MFA
     #  If you already have a bearer token and endpoint, no need to do this, just start using Centrify-InvokeREST
-    $token = Centrify-InteractiveLogin-GetToken -Username $username -Endpoint $endpoint -Verbose:$enableVerbose    
+    #$token = Centrify-InteractiveLogin-GetToken -Username $username -Endpoint $endpoint -Verbose:$enableVerbose    
+
+    # Issue a certificate for the logged in user. This only needs to be called once.
+    #$userCert = IssueUserCert -Endpoint $token.Endpoint -BearerToken $token.BearerToken
+
+    #Write user cert to file. This only needs to be called once. File location can be customized as needed.
+    #$certificateFile = $username + "_certificate.p12"
+    #$certbytes = [Convert]::FromBase64String($userCert)
+    #[io.file]::WriteAllBytes("C:\\" + $certificateFile,$certBytes)
+
+    #Get a certificate from file for use instead of MFA login. This can be called after IssueUserCert has been completed and the certificate has been written to file.
+    #$certificate = new-object System.Security.Cryptography.X509Certificates.X509Certificate2("C:\\$certificateFile")
+
+    #Negotiate an ASPXAUTH token from a certificate stored on file. This replaces the need for Centrify-InteractiveLogin-GetToken. This can be called after IssueUserCert has been completed and the certificate has been written to file.
+    #$token = Centrify-CertSsoLogin-GetToken -Certificate $certificate -Endpoint $endpoint -Verbose:$enableVerbose
             
     # Get information about the user who owns this token via /security/whoami     
     $userInfo = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/whoami" -Token $token.BearerToken -Verbose:$enableVerbose     
@@ -57,7 +72,7 @@ try
     #$myApplications = GetUPData -Endpoint $token.Endpoint -BearerToken $token.BearerToken
     #foreach($app in $myApplications)
     #{
-    #    Write-Host "Assigned to me => Name: " $app.DisplayName " Key: " $app.AppKey " Icon: " $app.Icon
+        #Write-Host "Assigned to me => Name: " $app.DisplayName " Key: " $app.AppKey " Icon: " $app.Icon
     #} 
     
     # Get apps assigned to sysadmin role
