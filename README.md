@@ -15,10 +15,12 @@ The sample is broken into 3 parts:
 Sample Functionality Includes:
 
     1. Utilizing interactive MFA to authenticate a user and retrieve a session for interacting with the platform
-    2. Issuing queries to the report system
-    3. Updating credentials on a UsernamePassword application
-    4. Getting assigned apps (User Portal view)
-    5. Getting assigned apps by role
-    6. Creating a new CUS user
-    7. Locking/Unlocking a CUS user
+    2. Issuing a certificate for a user
+    3. Negotiating a authentication token from a certificate
+    4. Issuing queries to the report system
+    5. Updating credentials on a UsernamePassword application
+    6. Getting assigned apps (User Portal view)
+    7. Getting assigned apps by role
+    8. Creating a new CUS user
+    9. Locking/Unlocking a CUS user
    
