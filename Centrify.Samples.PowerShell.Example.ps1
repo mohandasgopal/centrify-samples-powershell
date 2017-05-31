@@ -16,7 +16,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$username = "",
-    [string]$endpoint = "https://aaa3021.my-kibble.centrify.com"
+    [string]$endpoint = "https://cloud.centrify.com"
 )
 
 # Get the directory the example script lives in
