@@ -35,6 +35,8 @@ $enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.GetRoleApps.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CreateUser.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.SetUserState.ps1
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.UpdateApplicationDE.ps1
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.CheckProxyHealth.ps1
 # Import sample function definitions for CPS
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddResource.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddAccount.ps1
@@ -95,6 +97,17 @@ try
     # Update the credentials for my UP app...
     #UpdateApplicationDE -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "someAppKeyFromGetUPData" -Username "newUsername" -Password "newPassword"    
     
+    # Check Cloud Connector Health
+    #Get a list of connectors registered to a tenant using a Redrock Query and then loop through the connector list and write results to file.
+    #$connectorUuidList = Query -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Query "select MachineName, ID from proxy"     
+    #foreach($row in $connectorUuidList.Results)
+    #{
+        #Write-Host "Checking health of Cloud Connector on" $row.Row.MachineName
+        #$connectorHealth = CheckProxyHealth -Endpoint $token.Endpoint -BearerToken $token.BearerToken -ProxyUuid $row.Row.ID
+        #$connectorHealth.Connectors| ConvertTo-Json | Out-File -Append ("C:\filelocation\" + $row.Row.MachineName + ".json")        
+    #}
+
+
     # Create New CPS Resource
     #AddResource -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Name "ResourceName" -FQDN "Machine FQDN" -ComputerClass "Windows" -SessionType "Rdp" -Description "Some Description"     
     

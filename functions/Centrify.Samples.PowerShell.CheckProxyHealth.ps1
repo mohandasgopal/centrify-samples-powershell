@@ -12,28 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function UpdateApplicationDE {
+function CheckProxyHealth {
     param(
         [Parameter(Mandatory=$true)]
         $endpoint,
         [Parameter(Mandatory=$true)]
-        $bearerToken,
+        $bearerToken, 
         [Parameter(Mandatory=$true)]
-        $appKey,
-        [Parameter(Mandatory=$true)]
-        $username,
-        [Parameter(Mandatory=$true)]
-        $password     
+        $proxyUuid       
     )
     
     $restArg = @{}    
-    $restArg.UserNameStrategy = "Fixed"
-    $restArg.Password = $password
-    $restArg.UserNameArg = $username    
     
-    $restResult = Centrify-InvokeREST -Method "/saasmanage/updateapplicationde?_RowKey=$appKey" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
+    $restResult = Centrify-InvokeREST -Method "/Core/CheckProxyHealth?proxyUuid=$proxyUuid" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
         throw "Server error: $($restResult.Message)"
     }     
+    
+    return $restResult.Result
 }
