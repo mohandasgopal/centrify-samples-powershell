@@ -16,7 +16,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$username = "",
-    [string]$endpoint = "https://cloud.centrify.com"
+    [string]$endpoint = "https://aaa3021.my-kibble.centrify.com"
 )
 
 # Get the directory the example script lives in
@@ -36,6 +36,7 @@ $enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CreateUser.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.SetUserState.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.UpdateApplicationDE.ps1
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.HandleAppClick.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CheckProxyHealth.ps1
 # Import sample function definitions for CPS
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddResource.ps1
@@ -95,7 +96,16 @@ try
     #SetUserState -Endpoint $token.Endpoint -BearerToken $token.BearerToken -UserUuid $newUserUUID -NewState "None"
         
     # Update the credentials for my UP app...
-    #UpdateApplicationDE -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "someAppKeyFromGetUPData" -Username "newUsername" -Password "newPassword"    
+    #UpdateApplicationDE -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "someAppKeyFromGetUPData" -Username "newUsername" -Password "newPassword"  
+    
+    # Simpluate an App Click and return SAML Response...
+    #$appClickResult = HandleAppClick -Endpoint $token.Endpoint -BearerToken $token.BearerToken -AppKey "37864871-0004-47f1-bbb6-09a33ee6ea9f"   
+    # Parse out SAML Response
+    #$appClickResult -match "value=(?<content>.*)/>" 
+    #Clean SAML Response
+    #$SAMLResponse = $matches['content'].Replace('"', "")
+    #Print SAML Response
+    #Write-Host $SAMLResponse
     
     # Check Cloud Connector Health
     #Get a list of connectors registered to a tenant using a Redrock Query and then loop through the connector list and write results to file.
