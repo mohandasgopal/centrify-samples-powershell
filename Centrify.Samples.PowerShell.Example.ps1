@@ -41,6 +41,7 @@ $enableVerbose = ($PSBoundParameters['Verbose'] -eq $true)
 # Import sample function definitions for CPS
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddResource.ps1
 . $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.AddAccount.ps1
+. $exampleRootDir\functions\Centrify.Samples.PowerShell.CPS.UpdateMembersCollection.ps1
 
 try
 {
@@ -123,6 +124,9 @@ try
     
     # Add User to a CPS Resource
     #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -DomainID "DomainId" -Description "Some Description" -Host "ComputerID"    
+
+    # Update a CPS Set/Collection
+    #UpdateMembersCollection -Endpoint $token.Endpoint -BearerToken $token.BearerToken -id "setGUID" -key "AccountOrServerKey" -table "Server or VaultAccount" 
     
     # We're done, and don't want to use this token for anything else, so invalidate it by logging out
     $logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
