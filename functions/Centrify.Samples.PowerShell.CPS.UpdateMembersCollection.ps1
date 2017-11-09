@@ -30,7 +30,7 @@ function UpdateMembersCollection {
     
     $restArg = @{}
     $restArg.id = $id
-    $restArg.add = @{@()}
+    $restArg.add = @(@{})
     $restArg.add[0].Key = $key
     $restArg.add[0].MemberType = "Row"
     $restArg.add[0].Table = $table
