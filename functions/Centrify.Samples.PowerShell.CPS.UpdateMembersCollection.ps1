@@ -30,10 +30,10 @@ function UpdateMembersCollection {
     
     $restArg = @{}
     $restArg.id = $id
-    $restArg.add = @{}
-    $restArg.add.Key = $key
-    $restArg.add.MemberType = "Row"
-    $restArg.add.Table = $table
+    $restArg.add = @(@{})
+    $restArg.add[0].Key = $key
+    $restArg.add[0].MemberType = "Row"
+    $restArg.add[0].Table = $table
 
     
     $updateResult = Centrify-InvokeREST -Method "/collection/updatememberscollection" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
