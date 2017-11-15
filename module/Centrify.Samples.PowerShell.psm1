@@ -267,7 +267,7 @@ function Centrify-Internal-AdvanceForMech {
                         
         $advanceResult = (Centrify-InvokeREST -Endpoint $endpoint -Method "/security/advanceauthentication" -Token $null -JsonContent $advanceArgsJson -WebSession $websession -IncludeSessionInResult $true).RestResult
         if($advanceResult.success -ne $true -or 
-            ($advanceResult.Result.Summary -ne "StartNextChallenge" -and $advanceResult.Result.Summary -ne "LoginSuccess")
+            ($advanceResult.Result.Summary -ne "StartNextChallenge" -and $advanceResult.Result.Summary -ne "LoginSuccess" -and $advanceResult.Result.Summary -ne "NewPackage")
         )
         {            
             throw $advanceResult.Message
