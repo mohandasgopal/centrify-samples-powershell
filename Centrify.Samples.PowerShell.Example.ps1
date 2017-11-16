@@ -123,7 +123,7 @@ try
     #AddResource -Endpoint $token.Endpoint -BearerToken $token.BearerToken -Name "ResourceName" -FQDN "Machine FQDN" -ComputerClass "Windows" -SessionType "Rdp" -Description "Some Description"     
     
     # Add User to a CPS Resource
-    #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -DomainID "DomainId" -Description "Some Description" -Host "ComputerID"    
+    #AddAccount -Endpoint $token.Endpoint -BearerToken $token.BearerToken -User "Username" -Password "Password" -Description "Some Description" -Host "ComputerID"    
 
     # Update a CPS Set/Collection
     #UpdateMembersCollection -Endpoint $token.Endpoint -BearerToken $token.BearerToken -id "setGUID" -key "AccountOrServerKey" -table "Server or VaultAccount" 
