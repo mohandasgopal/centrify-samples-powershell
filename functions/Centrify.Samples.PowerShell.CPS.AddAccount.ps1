@@ -19,8 +19,6 @@ function AddAccount {
         [Parameter(Mandatory=$true)]
         $bearerToken,
         [Parameter(Mandatory=$true)]
-	$DomainID,
-        [Parameter(Mandatory=$true)]
         $User,
         [Parameter(Mandatory=$true)]
         $Password,
@@ -34,7 +32,6 @@ function AddAccount {
     $restArg = @{}
     $restArg.User = $User
     $restArg.Password = $Password
-    $restArg.DomainID = $DomainID
     $restArg.IsManaged = "true"
     $restArg.UseWheel = "false"
     $restArg.Description = $Description
