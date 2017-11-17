@@ -26,43 +26,67 @@ function UpdateResource {
         $FQDN,
         [Parameter(Mandatory=$true)]
         $ComputerClass,
-        [Parameter(Mandatory=$true)]
-        $SessionType,
-        [Parameter(Mandatory=$true)]
-        $Port,
-        [Parameter(Mandatory=$true)]
-        $Description,
-        [Parameter(Mandatory=$true)]
-        $ProxyUser,
-        [Parameter(Mandatory=$true)]
-        $ProxyUserPassword,
-        [Parameter(Mandatory=$true)]
-        $ProxyUserIsManaged,
-        [Parameter(Mandatory=$true)]
-        $ManagementMode,
-        [Parameter(Mandatory=$true)]
-        $ManagementPort             
+        $SessionType = "",
+        $Port = $null,
+        $Description = "",
+        $ProxyUser = "",
+        $ProxyUserPassword = "",
+        $ProxyUserIsManaged = "",
+        $ManagementMode = "",
+        $ManagementPort = $null
     )
-	
+
     $restArg = @{}
     $restArg.ID = $ID
     $restArg.Name = $Name
     $restArg.FQDN = $FQDN
     $restArg.ComputerClass = $ComputerClass
-    $restArg.SessionType = $SessionType
-    $restArg.Port = $Port
-    $restArg.Description = $Description
-    $restArg.ProxyUser = $ProxyUser
-    $restArg.ProxyUserPassword = $ProxyUserPassword
-    $restArg.ProxyUserIsManaged = $ProxyUserIsManaged
-    $restArg.ManagementMode = $ManagementMode
-    $restArg.ManagementPort = $ManagementPort
-	
+    if ($SessionType -ne "")
+    {
+        $restArg.SessionType = $SessionType
+    }
+
+    if ($Port -ne $null)
+    {
+        $restArg.Port = $Port
+    }
+
+    if ($Description -ne "")
+    {
+        $restArg.Description = $Description
+    }
+
+    if ($ProxyUser -ne "")
+    {
+        if ($ProxyUserPassword -ne "")
+        {
+            if ($ProxyUserIsManaged -ne ""){
+                $restArg.ProxyUser = $ProxyUser
+                $restArg.ProxyUserPassword = $ProxyUserPassword
+                $restArg.ProxyUserIsManaged = $ProxyUserIsManaged
+            }else{
+                throw "You must enter a management state for the proxy user"
+            }
+        }else{
+            throw "You must enter a password for the proxy user"
+        }
+    }
+
+    if ($ManagementMode -ne "")
+    {
+        $restArg.ManagementMode = $ManagementMode
+    }
+
+    if ($ManagementPort -ne $null)
+    {
+        $restArg.ManagementPort = $ManagementPort
+    }
+
     $restResult = Centrify-InvokeREST -Method "/ServerManage/UpdateResource" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
         throw "Server error: $($restResult.Message)"
-    }     
-    
-    return $restResult.Result		    
+    }
+
+    return $restResult.Result
 }
