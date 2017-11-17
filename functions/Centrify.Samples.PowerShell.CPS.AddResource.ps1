@@ -26,11 +26,10 @@ function AddResource {
         $ComputerClass,
         [Parameter(Mandatory=$true)]
         $SessionType,
-        [Parameter(Mandatory=$true)]
-        $Description
-              
+        $Description = ""
+
     )
-	
+
     $restArg = @{}
     $restArg.Name = $Name
     $restArg.FQDN = $FQDN
@@ -38,11 +37,12 @@ function AddResource {
     $restArg.SessionType = $SessionType
     $restArg.Description = $Description
 	
+
     $restResult = Centrify-InvokeREST -Method "/ServerManage/AddResource" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
         throw "Server error: $($restResult.Message)"
-    }     
-    
-    return $restResult.Result		    
+    }
+
+    return $restResult.Result
 }
