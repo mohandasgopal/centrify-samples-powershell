@@ -427,6 +427,51 @@ function Centrify-OAuth-ClientCredentials
     Write-Output $finalResult  
 }
 
+function Centrify-OAuthResourceOwner
+{
+    [CmdletBinding()]
+    param(
+        [string] $endpoint = "https://cloud.centrify.com",
+        [Parameter(Mandatory=$true)]
+        [string] $appid, 
+        [Parameter(Mandatory=$true)]
+        [string] $clientid,
+        [string] $clientsecret,
+        [string] $username,
+        [Parameter(Mandatory=$true)]
+        [string] $password,
+        [Parameter(Mandatory=$true)]
+        [string] $scope
+        )
+
+    $verbosePreference = "Continue"
+    $api = "$endpoint/oauth2/token/$appid"
+    $bod = @{}
+    $bod.grant_type = "password"
+    $bod.username = $username
+    $bod.password = $password
+    $bod.scope = $scope
+
+    if($clientsecret)
+    {
+        $basic = Centrify-InternalMakeClientAuth $clientid $clientsecret
+    }
+    else
+    {
+        $basic = @{}
+        $bod.client_id = $clientid
+    }
+
+    $restResult = Invoke-RestMethod -Method Post -Uri $api -Headers $basic -Body $bod
+
+    $finalResult = @{}
+    $finalResult.Endpoint = $endpoint    
+    $finalResult.BearerToken = $restResult.access_token
+
+    Write-Output $finalResult  
+}
+
+
 #Internal function. Returns base64 encoded auth token for basic Authorizatioin header.
 function Centrify-InternalMakeClientAuth($id,$secret)
 {
@@ -440,3 +485,4 @@ Export-ModuleMember -function Centrify-InvokeREST
 Export-ModuleMember -function Centrify-InteractiveLogin-GetToken
 Export-ModuleMember -function Centrify-CertSsoLogin-GetToken
 Export-ModuleMember -function Centrify-OAuth-ClientCredentials
+Export-ModuleMember -function Centrify-OAuthResourceOwner

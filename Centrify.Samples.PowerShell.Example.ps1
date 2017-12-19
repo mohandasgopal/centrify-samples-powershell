@@ -55,6 +55,9 @@ try
     #Authorization using OAuth2 Cleint Credentials Flow. If interactive or MFA is desired, use Centrify-InteractiveLogin-GetToken instead.
     $token = Centrify-OAuth-ClientCredentials -Endpoint $endpoint -Appid "applicationId" -Clientid "client@domain" -Clientsecret "clientSec" -Scope "scope" -Verbose:$enableVerbose    
 
+    #Authorization using OAuth2 Resopurce Owner Flow. If interactive or MFA is desired, use Centrify-InteractiveLogin-GetToken instead.
+    #$token = Centrify-OAuthResourceOwner -Endpoint $endpoint -Appid "applicationId" -Clientid "client@domain" -Clientsecret "clientSec" -Username "user@domain" -Password "password" -Scope "scope" -Verbose:$enableVerbose
+
     # Issue a certificate for the logged in user. This only needs to be called once.
     #$userCert = IssueUserCert -Endpoint $token.Endpoint -BearerToken $token.BearerToken
 
@@ -140,7 +143,7 @@ try
     #UpdateMembersCollection -Endpoint $token.Endpoint -BearerToken $token.BearerToken -id "setGUID" -key "AccountOrServerKey" -table "Server or VaultAccount" 
     
     # We're done, and don't want to use this token for anything else, so invalidate it by logging out
-    $logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
+    #$logoutResult = Centrify-InvokeREST -Endpoint $token.Endpoint -Method "/security/logout" -Token $token.BearerToken -Verbose:$enableVerbose           
 }
 finally
 {
