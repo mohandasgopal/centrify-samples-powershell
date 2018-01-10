@@ -14,8 +14,9 @@
 
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)]
-    [string]$username = "",
+    #Used for interactive auth only. Comment out for OAuth
+    #[Parameter(Mandatory=$true)]
+    #[string]$username = "",
     [string]$endpoint = "https://cloud.centrify.com"
 )
 
