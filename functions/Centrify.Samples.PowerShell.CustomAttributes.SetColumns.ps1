@@ -12,27 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function CreateUser {
+function SetColumns {
     param(
         [Parameter(Mandatory=$true)]
         $endpoint,
         [Parameter(Mandatory=$true)]
         $bearerToken,
         [Parameter(Mandatory=$true)]
-        $username,
-        [Parameter(Mandatory=$true)]
-        $password,
+        $column,
         [Parameter(Mandatory=$false)]
-        $description           
+        $value,
+        [Parameter(Mandatory=$false)]
+        $id,
+        [Parameter(Mandatory=$false)]
+        $table
+
+                  
     )
     
     $restArg = @{}
-    $restArg.Name = $username
-    $restArg.Mail = $username
-    $restArg.Password = $password    
-    $restArg.Description = $description
+    $restArg.Columns = @{}
+    $restArg.Columns.$column = $value #Column to update and its value
+    $restArg.ID = $id #User UUID
+    $restArg.Table = $table #Normally set to users
     
-    $restResult = Centrify-InvokeREST -Method "/cdirectoryservice/createuser" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
+    $restResult = Centrify-InvokeREST -Method "/ExtData/SetColumns" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
         throw "Server error: $($restResult.Message)"

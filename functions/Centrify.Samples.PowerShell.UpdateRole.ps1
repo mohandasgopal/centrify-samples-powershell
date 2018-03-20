@@ -12,27 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function CreateUser {
+function UpdateRole {
     param(
         [Parameter(Mandatory=$true)]
         $endpoint,
         [Parameter(Mandatory=$true)]
         $bearerToken,
         [Parameter(Mandatory=$true)]
-        $username,
-        [Parameter(Mandatory=$true)]
-        $password,
+        $name,
         [Parameter(Mandatory=$false)]
-        $description           
+        $description,
+        [Parameter(Mandatory=$false)]
+        $roles,
+        [Parameter(Mandatory=$false)]
+        $users,
+        [Parameter(Mandatory=$false)]
+        $groups
+                  
     )
     
     $restArg = @{}
-    $restArg.Name = $username
-    $restArg.Mail = $username
-    $restArg.Password = $password    
+    $restArg.Name = $name
     $restArg.Description = $description
+    $restArg.Roles = @{}
+    $restArg.Roles.Add = $roles
+    $restArg.Users = @{}
+    $restArg.Users.Add = $users
+    $restArg.Groups = @{}
+    $restArg.Groups.Add = $groups
     
-    $restResult = Centrify-InvokeREST -Method "/cdirectoryservice/createuser" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
+    $restResult = Centrify-InvokeREST -Method "/SaasManage/UpdateRole" -Endpoint $endpoint -Token $bearerToken -ObjectContent $restArg -Verbose:$enableVerbose
     if($restResult.success -ne $true)
     {
         throw "Server error: $($restResult.Message)"
